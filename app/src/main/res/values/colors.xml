@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray">#CCCCCC</color>
+    <color name="purple_500">#7766FF</color>
+    <color name="purple_light">#A98CFF</color>
+    <color name="card_bg">#F8F9FA</color>
+    <color name="aqua">#58CCED</color>
+</resources>
