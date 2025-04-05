@@ -3,12 +3,16 @@ package com.example.appointmentbookingapplication;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Users.db";
+    private static final int DATABASE_VERSION = 2; // Increased to force onUpgrade
+
     private static final String TABLE_USERS = "users";
     private static final String COL_ID = "id";
     private static final String COL_NAME = "fullname";
@@ -18,54 +22,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_STATE = "state";
     private static final String COL_PASSWORD = "password";
 
-    // Doctors table
+    // Doctors Table
     private static final String TABLE_DOCTORS = "doctors";
     private static final String COL_DOCTOR_ID = "doctor_id";
     private static final String COL_DOCTOR_NAME = "doctor_name";
     private static final String COL_SPECIALITY = "speciality";
     private static final String COL_RATING = "rating";
     private static final String COL_EXPERIENCE = "experience";
+
     public DatabaseHelper(Context context) {
-        super(context, DATABASE_NAME, null, 1);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Create users table (your original structure)
-        String CREATE_USERS_TABLE = "CREATE TABLE " + TABLE_USERS + "("
-                + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_NAME + " TEXT, "
-                + COL_EMAIL + " TEXT UNIQUE, "
-                + COL_AGE + " INTEGER, "
-                + COL_GENDER + " TEXT, "
-                + COL_STATE + " TEXT, "
-                + COL_PASSWORD + " TEXT)";
-        db.execSQL(CREATE_USERS_TABLE);
+        try {
+            // Create Users Table
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_USERS + "("
+                    + COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + COL_NAME + " TEXT, "
+                    + COL_EMAIL + " TEXT UNIQUE, "
+                    + COL_AGE + " INTEGER, "
+                    + COL_GENDER + " TEXT, "
+                    + COL_STATE + " TEXT, "
+                    + COL_PASSWORD + " TEXT)");
 
-        // Create doctors table (new table for dashboard functionality)
-        String CREATE_DOCTORS_TABLE = "CREATE TABLE " + TABLE_DOCTORS + "("
-                + COL_DOCTOR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + COL_DOCTOR_NAME + " TEXT,"
-                + COL_SPECIALITY + " TEXT,"
-                + COL_RATING + " REAL,"
-                + COL_EXPERIENCE + " TEXT)";
-        db.execSQL(CREATE_DOCTORS_TABLE);
+            // Create Doctors Table
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_DOCTORS + "("
+                    + COL_DOCTOR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + COL_DOCTOR_NAME + " TEXT, "
+                    + COL_SPECIALITY + " TEXT, "
+                    + COL_RATING + " REAL, "
+                    + COL_EXPERIENCE + " TEXT)");
 
-        // Insert sample doctors
-        insertSampleDoctors(db);
+            // Insert Sample Data if Table is Empty
+            if (!doesTableHaveData(db, TABLE_DOCTORS)) {
+                insertSampleDoctors(db);
+            }
+
+            Log.d("DatabaseHelper", "Tables created successfully.");
+        } catch (SQLException e) {
+            Log.e("DatabaseHelper", "Error creating tables", e);
+        }
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older tables if they exist
+        Log.d("DatabaseHelper", "Upgrading database from version " + oldVersion + " to " + newVersion);
+
+        // Drop and Recreate Tables
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DOCTORS);
-
-        // Create tables again
         onCreate(db);
     }
 
-    // Your original user registration methods
+    // Register User
     public boolean registerUser(String fullname, String email, int age, String gender, String state, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -85,6 +96,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
+    // Check if User Exists
     public boolean userExists(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ?", new String[]{email});
@@ -93,23 +105,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return exists;
     }
 
+    // Validate User Login
     public boolean validateUser(String email, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE " + COL_EMAIL + " = ? AND " + COL_PASSWORD + " = ?",
                 new String[]{email, password});
-        boolean valid = (cursor.getCount() > 0);
+        boolean isValid = (cursor.getCount() > 0);
         cursor.close();
-        return valid;
+        return isValid;
     }
 
-    // New methods for dashboard functionality
+    // Get User Full Name
     public String getUserFullName(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String[] columns = {COL_NAME};
-        String selection = COL_EMAIL + " = ?";
-        String[] selectionArgs = {email};
-
-        Cursor cursor = db.query(TABLE_USERS, columns, selection, selectionArgs, null, null, null);
+        Cursor cursor = db.query(TABLE_USERS, new String[]{COL_NAME}, COL_EMAIL + " = ?", new String[]{email}, null, null, null);
         String fullName = "";
         if (cursor.moveToFirst()) {
             fullName = cursor.getString(0);
@@ -118,25 +127,102 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return fullName;
     }
 
+    // Get All Doctors
+// Get All Doctors Safely
     public Cursor getAllDoctors() {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(TABLE_DOCTORS, null, null, null, null, null, null);
+        Cursor cursor = null;
+
+        try {
+            // Check if 'doctors' table exists
+            Cursor tableCursor = db.rawQuery(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                    new String[]{TABLE_DOCTORS}
+            );
+
+            if (tableCursor.getCount() == 0) {
+                Log.w("DatabaseHelper", "Doctors table does not exist. No content available.");
+                tableCursor.close();
+                return null;  // or return an empty MatrixCursor
+            }
+
+            tableCursor.close();
+
+            // Now attempt to get all doctors
+            cursor = db.query(TABLE_DOCTORS, null, null, null, null, null, null);
+
+            if (cursor.getCount() == 0) {
+                Log.i("DatabaseHelper", "No content available in doctors table.");
+            }
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error while retrieving doctors: ", e);
+        }
+
+        return cursor;
     }
 
-    // Helper method to insert sample doctors
+    // Check if Table Has Data
+    private boolean doesTableHaveData(SQLiteDatabase db, String tableName) {
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + tableName, null);
+        boolean hasData = false;
+        if (cursor.moveToFirst()) {
+            hasData = cursor.getInt(0) > 0;
+        }
+        cursor.close();
+        return hasData;
+    }
+
+    // Insert Sample Doctors
     private void insertSampleDoctors(SQLiteDatabase db) {
+        // Add Orthopedics doctor
         ContentValues doctor1 = new ContentValues();
-        doctor1.put(COL_DOCTOR_NAME, "Dr. Michael Roberts");
+        doctor1.put(COL_DOCTOR_NAME, "Dr. Sarah Johnson");
         doctor1.put(COL_SPECIALITY, "Orthopedics");
         doctor1.put(COL_RATING, 4.2);
-        doctor1.put(COL_EXPERIENCE, "20 Year");
+        doctor1.put(COL_EXPERIENCE, "20 Years");
         db.insert(TABLE_DOCTORS, null, doctor1);
 
+// Add Dentistry doctor
         ContentValues doctor2 = new ContentValues();
-        doctor2.put(COL_DOCTOR_NAME, "Dr. Sarah Thompson");
-        doctor2.put(COL_SPECIALITY, "Cardiology");
+        doctor2.put(COL_DOCTOR_NAME, "Dr. Michael Roberts");
+        doctor2.put(COL_SPECIALITY, "Dentistry");
         doctor2.put(COL_RATING, 4.5);
-        doctor2.put(COL_EXPERIENCE, "4 Year");
+        doctor2.put(COL_EXPERIENCE, "15 Years");
         db.insert(TABLE_DOCTORS, null, doctor2);
+
+// Add Neurology doctor
+        ContentValues doctor3 = new ContentValues();
+        doctor3.put(COL_DOCTOR_NAME, "Dr. David Chen");
+        doctor3.put(COL_SPECIALITY, "Orthopedics");
+        doctor3.put(COL_RATING, 4.8);
+        doctor3.put(COL_EXPERIENCE, "25 Years");
+        db.insert(TABLE_DOCTORS, null, doctor3);
+
+// Add Radiology doctor
+        ContentValues doctor4 = new ContentValues();
+        doctor4.put(COL_DOCTOR_NAME, "Dr. Emily Wilson");
+        doctor4.put(COL_SPECIALITY, "Radiology");
+        doctor4.put(COL_RATING, 4.3);
+        doctor4.put(COL_EXPERIENCE, "12 Years");
+        db.insert(TABLE_DOCTORS, null, doctor4);
+
+// Add Cardiology doctor
+        ContentValues doctor5 = new ContentValues();
+        doctor5.put(COL_DOCTOR_NAME, "Dr. James Peterson");
+        doctor5.put(COL_SPECIALITY, "Cardiology");
+        doctor5.put(COL_RATING, 4.7);
+        doctor5.put(COL_EXPERIENCE, "18 Years");
+        db.insert(TABLE_DOCTORS, null, doctor5);
+
+// Add Pediatrician
+        ContentValues doctor6 = new ContentValues();
+        doctor6.put(COL_DOCTOR_NAME, "Dr. Lisa Wong");
+        doctor6.put(COL_SPECIALITY, "Pediatrics");
+        doctor6.put(COL_RATING, 4.9);
+        doctor6.put(COL_EXPERIENCE, "10 Years");
+        db.insert(TABLE_DOCTORS, null, doctor6);
+
+        Log.d("DatabaseHelper", "Sample doctors inserted.");
     }
 }

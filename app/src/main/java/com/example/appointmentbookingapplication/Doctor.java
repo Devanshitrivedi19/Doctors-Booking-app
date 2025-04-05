@@ -5,17 +5,19 @@ public class Doctor {
     private String speciality;
     private float rating;
     private String experience;
+    private int imageResId;  // New field for image resource ID
 
-    public Doctor(String name, String speciality, float rating, String experience) {
+    public Doctor(String name, String speciality, float rating, String experience, int imageResId) {
         this.name = name;
         this.speciality = speciality;
         this.rating = rating;
         this.experience = experience;
+        this.imageResId = imageResId;
     }
 
-    // Getters
     public String getName() { return name; }
     public String getSpeciality() { return speciality; }
     public float getRating() { return rating; }
     public String getExperience() { return experience; }
+    public int getImageResId() { return imageResId; }
 }

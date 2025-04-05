@@ -1,9 +1,9 @@
 package com.example.appointmentbookingapplication;
 
-// DoctorsAdapter.java
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,6 +31,7 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
         holder.specialityTextView.setText(doctor.getSpeciality());
         holder.ratingTextView.setText(String.valueOf(doctor.getRating()));
         holder.experienceTextView.setText(doctor.getExperience());
+        holder.doctorImageView.setImageResource(doctor.getImageResId());  // Set doctor image
     }
 
     @Override
@@ -40,6 +41,7 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView nameTextView, specialityTextView, ratingTextView, experienceTextView;
+        public ImageView doctorImageView; // New ImageView for doctor photo
 
         public ViewHolder(View view) {
             super(view);
@@ -47,6 +49,7 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
             specialityTextView = view.findViewById(R.id.specialityTextView);
             ratingTextView = view.findViewById(R.id.ratingTextView);
             experienceTextView = view.findViewById(R.id.experienceTextView);
+            doctorImageView = view.findViewById(R.id.doctorImageView); // Reference ImageView
         }
     }
 }

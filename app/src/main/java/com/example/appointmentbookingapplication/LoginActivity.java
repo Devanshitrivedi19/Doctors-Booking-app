@@ -2,6 +2,8 @@ package com.example.appointmentbookingapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,24 +40,32 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(LoginActivity.this, SignupActivity.class));
             }
         });
+        etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
     }
 
+    // Update loginUser() method with better error handling:
     private void loginUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
+        try {
+            String email = etEmail.getText().toString().trim();
+            String password = etPassword.getText().toString().trim();
 
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(LoginActivity.this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
-        } else {
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             boolean isValid = dbHelper.validateUser(email, password);
             if (isValid) {
                 Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
-                intent.putExtra("email", email); // Changed from username to email
+                intent.putExtra("email", email);
                 startActivity(intent);
                 finish();
             } else {
                 Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
             }
+        } catch (Exception e) {
+            Toast.makeText(LoginActivity.this, "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+            Log.e("LoginActivity", "Error in loginUser", e);
         }
     }
 }
