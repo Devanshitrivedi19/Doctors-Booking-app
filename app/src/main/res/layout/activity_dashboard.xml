@@ -7,11 +7,9 @@
     android:background="#FFFFFF"
     android:fillViewport="true"
     android:padding="16dp">
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
         <!-- Logout Button -->
         <Button
             android:id="@+id/logoutButton"
@@ -23,13 +21,11 @@
             android:background="@drawable/button_gradient"
             android:text="Logout"
             android:textColor="@color/white"/>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_alignParentEnd="@id/logoutButton">
-
             <!-- Welcome Message -->
             <TextView
                 android:id="@+id/welcomeTextView"
@@ -38,13 +34,11 @@
                 android:layout_marginBottom="16dp"
                 android:textColor="#000000"
                 android:textSize="18sp"/>
-
             <!-- Image with Search Box -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp">
-
                 <ImageView
                     android:id="@+id/doctorImage"
                     android:layout_width="match_parent"
@@ -52,7 +46,6 @@
                     android:layout_marginTop="8dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/doctorimage"/>
-
                 <!-- Search Box -->
                 <RelativeLayout
                     android:id="@+id/searchContainer"
@@ -62,7 +55,6 @@
                     android:layout_marginStart="40dp"
                     android:background="@drawable/search_box_background"
                     android:padding="8dp">
-
                     <ImageButton
                         android:id="@+id/searchButton"
                         android:layout_width="40dp"
@@ -72,7 +64,6 @@
                         android:scaleType="centerInside"
                         android:src="@drawable/ic_search"
                         app:tint="#757575"/>
-
                     <EditText
                         android:id="@+id/searchEditText"
                         android:layout_width="match_parent"
@@ -88,7 +79,6 @@
                         android:textColorHint="#757575"/>
                 </RelativeLayout>
             </RelativeLayout>
-
             <!-- Action Button -->
             <Button
                 android:id="@+id/bookScheduleButton"
@@ -100,7 +90,6 @@
                 android:text="Book and Schedule with nearest doctor"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"/>
-
             <!-- Doctor Specialties Section -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -108,7 +97,6 @@
                 android:layout_marginBottom="4dp"
                 android:paddingTop="5dp"
                 android:orientation="horizontal">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -117,16 +105,14 @@
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
                     android:textStyle="bold"/>
-
                 <TextView
                     android:id="@+id/seeAllSpecialties"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:text="See all"
                     android:textColor="#2196F3"/>
+                <!-- In activity_dashboard.xml -->
             </LinearLayout>
-
             <!-- Specialties RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/specialtiesRecyclerView"
@@ -136,14 +122,12 @@
                 android:clipToPadding="false"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"/>
-
             <!-- Top Doctors Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:orientation="horizontal">
-
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -152,16 +136,14 @@
                     android:paddingBottom="5dp"
                     android:textSize="16sp"
                     android:textStyle="bold"/>
-
                 <TextView
                     android:id="@+id/seeAllDoctors"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
                     android:text="See all"
+                    android:layout_marginStart="8dp"
                     android:textColor="#2196F3"/>
             </LinearLayout>
-
             <!-- Doctors RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/doctorsRecyclerView"
@@ -171,7 +153,6 @@
                 android:clipToPadding="false"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"/>
-
             <!-- Bottom Navigation -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -179,7 +160,6 @@
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
                 android:padding="8dp">
-
                 <ImageView
                     android:id="@+id/nav_explorer"
                     android:layout_width="24dp"
@@ -187,7 +167,6 @@
                     android:layout_marginHorizontal="32dp"
                     android:src="@drawable/ic_explorer"
                     app:tint="#757575"/>
-
                 <ImageView
                     android:id="@+id/nav_waitlist"
                     android:layout_width="24dp"
@@ -195,7 +174,6 @@
                     android:layout_marginHorizontal="32dp"
                     android:src="@drawable/ic_waitlist"
                     app:tint="#757575"/>
-
                 <ImageView
                     android:id="@+id/nav_settings"
                     android:layout_width="24dp"
@@ -203,7 +181,6 @@
                     android:layout_marginHorizontal="32dp"
                     android:src="@drawable/ic_settings"
                     app:tint="#757575"/>
-
                 <ImageView
                     android:id="@+id/nav_account"
                     android:layout_width="24dp"

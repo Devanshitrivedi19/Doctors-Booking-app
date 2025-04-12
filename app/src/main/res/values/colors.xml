@@ -8,4 +8,7 @@
     <color name="card_bg">#F8F9FA</color>
     <color name="aqua">#58CCED</color>
     <color name="green">#4CAF50</color>
+
+    <!-- Add this primary color that your layout references -->
+    <color name="colorPrimary">@color/purple_500</color>
 </resources>

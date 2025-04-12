@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Appointment Booking Application</string>
+    <string name="doctor_image">Doctor profile picture</string>
 </resources>

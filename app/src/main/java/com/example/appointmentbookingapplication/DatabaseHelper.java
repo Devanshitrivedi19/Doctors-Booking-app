@@ -162,7 +162,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
-    // Check if Table Has Data
     private boolean doesTableHaveData(SQLiteDatabase db, String tableName) {
         Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + tableName, null);
         boolean hasData = false;
@@ -171,6 +170,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return hasData;
+    }
+    // DatabaseHelper.java
+    public Cursor getDoctorsBySpecialty(String specialty) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_DOCTORS,
+                null,
+                COL_SPECIALITY + " = ?",
+                new String[]{specialty},
+                null, null, null);
     }
 
     // Insert Sample Doctors
@@ -223,6 +231,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         doctor6.put(COL_EXPERIENCE, "10 Years");
         db.insert(TABLE_DOCTORS, null, doctor6);
 
+        ContentValues doctor7 = new ContentValues();
+        doctor6.put(COL_DOCTOR_NAME, "Dr. Philip Stieg");
+        doctor6.put(COL_SPECIALITY, "Neurology");
+        doctor6.put(COL_RATING, 4.2);
+        doctor6.put(COL_EXPERIENCE, "7 Years");
+        db.insert(TABLE_DOCTORS, null, doctor7);
         Log.d("DatabaseHelper", "Sample doctors inserted.");
     }
 }

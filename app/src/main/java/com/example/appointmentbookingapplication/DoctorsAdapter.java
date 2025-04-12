@@ -8,14 +8,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
-
 public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHolder> {
     private List<Doctor> doctors;
-
     public DoctorsAdapter(List<Doctor> doctors) {
         this.doctors = doctors;
     }
-
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -23,7 +20,6 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
                 .inflate(R.layout.item_doctor, parent, false);
         return new ViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Doctor doctor = doctors.get(position);
@@ -31,18 +27,15 @@ public class DoctorsAdapter extends RecyclerView.Adapter<DoctorsAdapter.ViewHold
         holder.specialityTextView.setText(doctor.getSpeciality());
         holder.ratingTextView.setText(String.valueOf(doctor.getRating()));
         holder.experienceTextView.setText(doctor.getExperience());
-        holder.doctorImageView.setImageResource(doctor.getImageResId());  // Set doctor image
+        holder.doctorImageView.setImageResource(doctor.getImageResId()); // Set doctor image
     }
-
     @Override
     public int getItemCount() {
         return doctors.size();
     }
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView nameTextView, specialityTextView, ratingTextView, experienceTextView;
         public ImageView doctorImageView; // New ImageView for doctor photo
-
         public ViewHolder(View view) {
             super(view);
             nameTextView = view.findViewById(R.id.nameTextView);
