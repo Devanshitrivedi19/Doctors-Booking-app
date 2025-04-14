@@ -1,5 +1,10 @@
 package com.example.appointmentbookingapplication;
 
+import static com.example.appointmentbookingapplication.DatabaseHelper.COL_DOCTOR_NAME;
+import static com.example.appointmentbookingapplication.DatabaseHelper.COL_EXPERIENCE;
+import static com.example.appointmentbookingapplication.DatabaseHelper.COL_RATING;
+import static com.example.appointmentbookingapplication.DatabaseHelper.COL_SPECIALITY;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -13,7 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DashboardActivity extends AppCompatActivity implements
         SpecialtiesAdapter.OnSpecialtyClickListener {
@@ -85,26 +92,52 @@ public class DashboardActivity extends AppCompatActivity implements
             Toast.makeText(this, "No doctors available", Toast.LENGTH_SHORT).show();
             return;
         }
+
         List<Doctor> doctorList = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            String name = cursor.getString(cursor.getColumnIndexOrThrow("doctor_name"));
-            String speciality = cursor.getString(cursor.getColumnIndexOrThrow("speciality"));
-            float rating = cursor.getFloat(cursor.getColumnIndexOrThrow("rating"));
-            String experience = cursor.getString(cursor.getColumnIndexOrThrow("experience"));
-            int[] doctorImages = { R.drawable.doctor1, R.drawable.doctor2, R.drawable.doctor3,R.drawable.doctor4,R.drawable.doctor5,R.drawable.doctor6,R.drawable.doctor7 };
-            int imageResId = doctorImages[doctorList.size() % doctorImages.length];
-            doctorList.add(new Doctor(name, speciality, rating, experience, imageResId));
+        int[] doctorImages = {
+                R.drawable.doctor1, R.drawable.doctor2, R.drawable.doctor3,
+                R.drawable.doctor4, R.drawable.doctor5, R.drawable.doctor6,
+                R.drawable.doctor7
+        };
+
+        try {
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("doctor_name"));
+                String speciality = cursor.getString(cursor.getColumnIndexOrThrow("speciality"));
+                float rating = cursor.getFloat(cursor.getColumnIndexOrThrow("rating"));
+                String experience = cursor.getString(cursor.getColumnIndexOrThrow("experience"));
+
+                // Assign image based on hash of doctor name
+                Map<String, Integer> nameToImageMap = new HashMap<>();
+                nameToImageMap.put("Dr. Sarah Johnson", R.drawable.doctor1);
+                nameToImageMap.put("Dr. Michael Roberts", R.drawable.doctor2);
+                nameToImageMap.put("Dr. David Chen", R.drawable.doctor3);
+                nameToImageMap.put("Dr. Emily Wilson", R.drawable.doctor4);
+                nameToImageMap.put("Dr. James Peterson", R.drawable.doctor5);
+                nameToImageMap.put("Dr. Lisa Wong", R.drawable.doctor6);
+                nameToImageMap.put("Dr. Philip Stieg", R.drawable.doctor7);
+
+// Add more mappings
+
+                int imageResId =nameToImageMap.get(name);
+
+                doctorList.add(new Doctor(name, speciality, rating, experience, imageResId));
+            }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
+
         DoctorsAdapter doctorsAdapter = new DoctorsAdapter(doctorList);
         doctorsRecyclerView.setLayoutManager(new LinearLayoutManager(
                 this, LinearLayoutManager.HORIZONTAL, false));
         doctorsRecyclerView.setAdapter(doctorsAdapter);
     }
+
     @Override
     public void onSpecialtyClick(String specialty) {
         filterDoctorsBySpecialty(specialty);
     }
+
     private void filterDoctorsBySpecialty(String specialty) {
         Cursor cursor = databaseHelper.getDoctorsBySpecialty(specialty);
         if (cursor == null || cursor.getCount() == 0) {
@@ -112,32 +145,52 @@ public class DashboardActivity extends AppCompatActivity implements
                     Toast.LENGTH_SHORT).show();
             return;
         }
+
         List<Doctor> doctorList = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            String name = cursor.getString(cursor.getColumnIndexOrThrow("doctor_name"));
-            String speciality = cursor.getString(cursor.getColumnIndexOrThrow("speciality"));
-            float rating = cursor.getFloat(cursor.getColumnIndexOrThrow("rating"));
-            String experience = cursor.getString(cursor.getColumnIndexOrThrow("experience"));
-            int[] doctorImages = { R.drawable.doctor1, R.drawable.doctor2 ,R.drawable.doctor3,R.drawable.doctor4,R.drawable.doctor5,R.drawable.doctor6,R.drawable.doctor7};
-            int imageResId = doctorImages[doctorList.size() % doctorImages.length];
-            doctorList.add(new Doctor(name, speciality, rating, experience, imageResId));
+        int[] doctorImages = {R.drawable.doctor1, R.drawable.doctor2, R.drawable.doctor3,
+                R.drawable.doctor4, R.drawable.doctor5, R.drawable.doctor6,
+                R.drawable.doctor7};
+
+        try {
+            while (cursor.moveToNext()) {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(COL_DOCTOR_NAME));
+                String speciality = cursor.getString(cursor.getColumnIndexOrThrow(COL_SPECIALITY));
+                float rating = cursor.getFloat(cursor.getColumnIndexOrThrow(COL_RATING));
+                String experience = cursor.getString(cursor.getColumnIndexOrThrow(COL_EXPERIENCE));
+
+                // Consistent image assignment using name hash
+                int imageIndex = Math.abs(name.hashCode()) % doctorImages.length;
+                int imageResId = doctorImages[imageIndex];
+
+                doctorList.add(new Doctor(name, speciality, rating, experience, imageResId));
+            }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
+
         DoctorsAdapter doctorsAdapter = new DoctorsAdapter(doctorList);
         doctorsRecyclerView.setAdapter(doctorsAdapter);
     }
+
     private void setupBottomNavigation() {
         findViewById(R.id.nav_explorer).setOnClickListener(v -> {
-// Handle explorer click
-        });
-        findViewById(R.id.nav_waitlist).setOnClickListener(v -> {
-// Handle waitlist click
-        });
-        findViewById(R.id.nav_settings).setOnClickListener(v -> {
 // Handle settings click
         });
+        findViewById(R.id.nav_waitlist).setOnClickListener(v -> {
+            try {
+                Intent intent = new Intent(DashboardActivity.this, WaitListActivity.class);
+                startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(DashboardActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                e.printStackTrace(); // Also view this in Logcat
+            }
+        });
+        findViewById(R.id.nav_settings).setOnClickListener(v -> {
+            startActivity(new Intent(DashboardActivity.this, SettingsActivity.class));
+        });
+
         findViewById(R.id.nav_account).setOnClickListener(v -> {
-// Navigate to profile activity
+            startActivity(new Intent(DashboardActivity.this, DashboardActivity.class));
         });
     }
 }

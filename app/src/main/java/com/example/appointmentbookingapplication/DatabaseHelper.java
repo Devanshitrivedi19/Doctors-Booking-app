@@ -11,7 +11,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "Users.db";
-    private static final int DATABASE_VERSION = 2; // Increased to force onUpgrade
+    private static final int DATABASE_VERSION = 3; // Increased to force onUpgrade
 
     private static final String TABLE_USERS = "users";
     private static final String COL_ID = "id";
@@ -23,13 +23,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_PASSWORD = "password";
 
     // Doctors Table
-    private static final String TABLE_DOCTORS = "doctors";
-    private static final String COL_DOCTOR_ID = "doctor_id";
-    private static final String COL_DOCTOR_NAME = "doctor_name";
-    private static final String COL_SPECIALITY = "speciality";
-    private static final String COL_RATING = "rating";
-    private static final String COL_EXPERIENCE = "experience";
+    public static final String TABLE_DOCTORS = "doctors";
+    public static final String COL_DOCTOR_ID = "doctor_id";
+    public static final String COL_DOCTOR_NAME = "doctor_name";
+    public static final String COL_SPECIALITY = "speciality";
+    public static final String COL_RATING = "rating";
+    public static final String COL_EXPERIENCE = "experience";
 
+    public static final String TABLE_WAITLIST = "waitlist";
+    public static final String COL_WAITLIST_ID = "id";
+    public static final String COL_PATIENT_NAME = "patient_name";
+    public static final String COL_PHONE = "phone";
+    public static final String COL_DATE = "date";
+    public static final String COL_TIME = "time";
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -55,6 +61,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     + COL_RATING + " REAL, "
                     + COL_EXPERIENCE + " TEXT)");
 
+            // Add this to onCreate() after creating doctors table
+            db.execSQL("CREATE TABLE IF NOT EXISTS appointments (" +
+                    "appointment_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "doctor_name TEXT," +
+                    "speciality TEXT," +
+                    "appointment_date TEXT," +
+                    "appointment_time TEXT)");
+
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_WAITLIST + "("
+                    + COL_WAITLIST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + COL_PATIENT_NAME + " TEXT, "
+                    + COL_DOCTOR_NAME + " TEXT, "
+                    + COL_PHONE + " TEXT, "
+                    + COL_EMAIL + " TEXT, "
+                    + COL_DATE + " TEXT, "
+                    + COL_TIME + " TEXT)");
+
             // Insert Sample Data if Table is Empty
             if (!doesTableHaveData(db, TABLE_DOCTORS)) {
                 insertSampleDoctors(db);
@@ -73,6 +96,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Drop and Recreate Tables
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DOCTORS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_WAITLIST);
+        db.execSQL("DROP TABLE IF EXISTS appointments");
         onCreate(db);
     }
 
@@ -181,6 +206,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 null, null, null);
     }
 
+    public boolean addToWaitlist(String patientName, String doctorName, String phone, String email, String date, String time) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_PATIENT_NAME, patientName);
+        values.put(COL_DOCTOR_NAME, doctorName);  // Add doctor name
+        values.put(COL_PHONE, phone);
+        values.put(COL_EMAIL, email);
+        values.put(COL_DATE, date);
+        values.put(COL_TIME, time);
+        long result = db.insert(TABLE_WAITLIST, null, values);
+        return result != -1;
+    }
+    public Cursor getAllWaitlistedAppointments() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_WAITLIST, null, null, null, null, null, COL_DATE + " ASC");
+    }
     // Insert Sample Doctors
     private void insertSampleDoctors(SQLiteDatabase db) {
         // Add Orthopedics doctor
@@ -232,11 +273,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_DOCTORS, null, doctor6);
 
         ContentValues doctor7 = new ContentValues();
-        doctor6.put(COL_DOCTOR_NAME, "Dr. Philip Stieg");
-        doctor6.put(COL_SPECIALITY, "Neurology");
-        doctor6.put(COL_RATING, 4.2);
-        doctor6.put(COL_EXPERIENCE, "7 Years");
+        doctor7.put(COL_DOCTOR_NAME, "Dr. Philip Stieg");
+        doctor7.put(COL_SPECIALITY, "Neurology");
+        doctor7.put(COL_RATING, 4.2f);
+        doctor7.put(COL_EXPERIENCE, "7 Years");
         db.insert(TABLE_DOCTORS, null, doctor7);
         Log.d("DatabaseHelper", "Sample doctors inserted.");
     }
+    // Add to DatabaseHelper class
+    public boolean bookAppointment(String doctorName, String speciality, String date, String time) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COL_DOCTOR_NAME, doctorName);
+        values.put(COL_SPECIALITY, speciality);
+        values.put("appointment_date", date);
+        values.put("appointment_time", time);
+        long result = db.insert("appointments", null, values);
+        return result != -1;
+    }
+    public boolean isSlotAvailable(String doctorName, String date, String time) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM appointments WHERE doctor_name = ? AND appointment_date = ? AND appointment_time = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{doctorName, date, time});
+
+        boolean available = !cursor.moveToFirst();  // true if slot not found, i.e., available
+        cursor.close();
+        return available;
+    }
+
 }
